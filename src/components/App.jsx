@@ -37,11 +37,12 @@ export const App = () => {
 
   useEffect(() => {
     if (shouldFetch) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      /* eslint-disable react-hooks/exhaustive-deps */
       fetchPhoto({
         inputValue: inputValue,
         page: page,
       });
+      /* eslint-disable react-hooks/exhaustive-deps */
       setShouldFetch(false);
     }
   }, [inputValue, page, shouldFetch]);
