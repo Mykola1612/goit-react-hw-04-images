@@ -37,6 +37,7 @@ export const App = () => {
 
   useEffect(() => {
     if (shouldFetch) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       fetchPhoto({
         inputValue: inputValue,
         page: page,
