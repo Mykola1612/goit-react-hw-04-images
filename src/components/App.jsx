@@ -1,4 +1,3 @@
-import React from 'react';
 import ImageGallery from './ImageGallery/ImageGallery';
 import ImageGalleryItem from './ImageGalleryItem/ImageGalleryItem';
 import Loader from './Loader/Loader';
@@ -6,125 +5,100 @@ import Searchbar from './Searchbar/Searchbar';
 import Button from './Button/Button';
 import Modal from './Modal/Modal';
 import { fetchImage } from './fetch';
+import { useEffect, useState } from 'react';
 
-export class App extends React.Component {
-  state = {
-    element: [],
-    loader: false,
-    inputValue: '',
-    totalHits: null,
-    per_page: 12,
-    page: 1,
-    bigPhoto: null,
-    showModal: false,
-  };
+export const App = () => {
+  const [element, setElement] = useState([]);
+  const [loader, setLoader] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [totalHits, setTotalHits] = useState(null);
+  const [perPage] = useState(12);
+  const [page, setPage] = useState(1);
+  const [bigPhoto, setBigPhoto] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [shouldFetch, setShouldFetch] = useState(false);
 
-  fetchPhoto = async ({ inputValue, page }) => {
-    const { per_page } = this.state;
+  const fetchPhoto = async ({ inputValue, page }) => {
     try {
-      this.setState({
-        loader: true,
-      });
+      setLoader(true);
 
-      const data = await fetchImage({ inputValue, per_page, page });
+      const data = await fetchImage({ inputValue, perPage, page });
 
-      console.log(data);
-      this.setState(prevState => {
-        return {
-          totalHits: data.totalHits,
-          element: [...prevState.element, ...data.hits],
-        };
+      setElement(prevState => {
+        return [...prevState, ...data.hits];
       });
+      setTotalHits(data.totalHits);
     } catch (error) {
       console.error('Ошибка при загрузке данных:', error);
     } finally {
-      this.setState({
-        loader: false,
-      });
+      setLoader(false);
     }
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.inputValue !== this.state.inputValue ||
-      prevState.page !== this.state.page
-    ) {
-      this.fetchPhoto({
-        inputValue: this.state.inputValue,
-        page: this.state.page,
+  useEffect(() => {
+    if (shouldFetch) {
+      fetchPhoto({
+        inputValue: inputValue,
+        page: page,
       });
+      setShouldFetch(false);
     }
-  }
-  onSubmit = data => {
-    this.setState(prevState => {
-      if (data !== this.state.inputValue) {
-        return {
-          page: 1,
-          element: [],
-          inputValue: data,
-        };
-      }
-    });
+  }, [inputValue, page, shouldFetch]);
+
+  const onSubmit = data => {
+    if (data !== inputValue) {
+      setPage(1);
+      setElement([]);
+      setInputValue(data);
+      setShouldFetch(true);
+    }
   };
 
-  handleOnClick = () => {
-    this.setState(prev => ({
-      page: prev.page + 1,
-    }));
+  const handleOnClick = () => {
+    setPage(prevPage => prevPage + 1);
+    setShouldFetch(true);
   };
 
-  handleUrlOnClick = bigPhoto => {
-    this.setState({
-      bigPhoto: bigPhoto,
-    });
+  const handleUrlOnClick = bigPhoto => {
+    setBigPhoto(bigPhoto);
   };
 
-  toggleModal = () => {
-    if (this.state.showModal === false) {
-      this.setState({
-        showModal: true,
-      });
+  const toggleModal = () => {
+    if (showModal === false) {
+      setShowModal(true);
       return;
     }
-    this.setState({
-      showModal: false,
-    });
+    setShowModal(false);
   };
 
-  toggleModalEsc = () => {
-    this.setState({
-      showModal: false,
-    });
+  const toggleModalEsc = () => {
+    setShowModal(false);
   };
 
-  render() {
-    return (
-      <div>
-        {this.state.loader && <Loader />}
-        <Searchbar onSubmit={this.onSubmit} />
-        {this.state.element.length !== 0 && (
-          <ImageGallery>
-            <ImageGalleryItem
-              elements={this.state.element}
-              toggleModal={this.toggleModal}
-              handleUrlOnClick={this.handleUrlOnClick}
-            />
-          </ImageGallery>
-        )}
-        {this.state.element.length !== 0 &&
-          this.state.page <
-            Math.ceil(this.state.totalHits / this.state.per_page) && (
-            <Button handleOnClick={this.handleOnClick} />
-          )}
-
-        {this.state.showModal && (
-          <Modal
-            photo={this.state.bigPhoto}
-            toggleModal={this.toggleModal}
-            toggleModalEsc={this.toggleModalEsc}
+  return (
+    <div>
+      {loader && <Loader />}
+      <Searchbar onSubmit={onSubmit} />
+      {element.length !== 0 && (
+        <ImageGallery>
+          <ImageGalleryItem
+            elements={element}
+            toggleModal={toggleModal}
+            handleUrlOnClick={handleUrlOnClick}
           />
-        )}
-      </div>
-    );
-  }
-}
+        </ImageGallery>
+      )}
+      {element.length !== 0 && page < Math.ceil(totalHits / perPage) && (
+        <Button handleOnClick={handleOnClick} />
+      )}
+
+      {showModal && (
+        <Modal
+          photo={bigPhoto}
+          toggleModal={toggleModal}
+          toggleModalEsc={toggleModalEsc}
+        />
+      )}
+    </div>
+  );
+};
