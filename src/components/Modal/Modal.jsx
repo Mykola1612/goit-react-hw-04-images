@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import styles from './Modal.module.css';
 
-const Modal = ({ photo, toggleModal, toggleModalEsc }) => {
+const Modal = ({ photo, toggleModal }) => {
   const handleOnClickOverlay = e => {
     if (e.target.nodeName !== 'IMG') {
       toggleModal();
@@ -9,14 +9,16 @@ const Modal = ({ photo, toggleModal, toggleModalEsc }) => {
   };
 
   useEffect(() => {
+    const handleKeyDown = e => {
+      if (e.code === 'Escape') {
+        toggleModal();
+      }
+    };
     window.addEventListener('keydown', handleKeyDown);
-  });
-
-  const handleKeyDown = e => {
-    if (e.code === 'Escape') {
-      toggleModalEsc();
-    }
-  };
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [toggleModal]);
 
   return (
     <div className={styles.Overlay} onClick={handleOnClickOverlay}>

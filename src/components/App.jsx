@@ -16,49 +16,61 @@ export const App = () => {
   const [page, setPage] = useState(1);
   const [bigPhoto, setBigPhoto] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [shouldFetch, setShouldFetch] = useState(false);
 
-  const fetchPhoto = async ({ inputValue, page }) => {
-    try {
-      setLoader(true);
+  // const fetchPhoto = async ({ inputValue, page }) => {
+  //   try {
+  //     setLoader(true);
 
-      const data = await fetchImage({ inputValue, perPage, page });
+  //     const data = await fetchImage({ inputValue, perPage, page });
 
-      setElement(prevState => {
-        return [...prevState, ...data.hits];
-      });
-      setTotalHits(data.totalHits);
-    } catch (error) {
-      console.error('Ошибка при загрузке данных:', error);
-    } finally {
-      setLoader(false);
-    }
-  };
+  //     setElement(prevState => {
+  //       return [...prevState, ...data.hits];
+  //     });
+  //     setTotalHits(data.totalHits);
+  //   } catch (error) {
+  //     console.error('Ошибка при загрузке данных:', error);
+  //   } finally {
+  //     setLoader(false);
+  //   }
+  // };
 
   useEffect(() => {
-    if (shouldFetch) {
-      /* eslint-disable react-hooks/exhaustive-deps */
-      fetchPhoto({
-        inputValue: inputValue,
-        page: page,
-      });
-      /* eslint-disable react-hooks/exhaustive-deps */
-      setShouldFetch(false);
+    if (!inputValue) {
+      return;
     }
-  }, [inputValue, page, shouldFetch]);
+    const fetchPhoto = async ({ inputValue, page }) => {
+      try {
+        setLoader(true);
+
+        const data = await fetchImage({ inputValue, perPage, page });
+
+        setElement(prevState => {
+          return [...prevState, ...data.hits];
+        });
+        setTotalHits(data.totalHits);
+      } catch (error) {
+        console.error('Ошибка при загрузке данных:', error);
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    fetchPhoto({
+      inputValue: inputValue,
+      page: page,
+    });
+  }, [inputValue, page, perPage]);
 
   const onSubmit = data => {
     if (data !== inputValue) {
       setPage(1);
       setElement([]);
       setInputValue(data);
-      setShouldFetch(true);
     }
   };
 
   const handleOnClick = () => {
     setPage(prevPage => prevPage + 1);
-    setShouldFetch(true);
   };
 
   const handleUrlOnClick = bigPhoto => {
@@ -66,15 +78,7 @@ export const App = () => {
   };
 
   const toggleModal = () => {
-    if (showModal === false) {
-      setShowModal(true);
-      return;
-    }
-    setShowModal(false);
-  };
-
-  const toggleModalEsc = () => {
-    setShowModal(false);
+    setShowModal(prevState => !prevState);
   };
 
   return (
@@ -94,13 +98,7 @@ export const App = () => {
         <Button handleOnClick={handleOnClick} />
       )}
 
-      {showModal && (
-        <Modal
-          photo={bigPhoto}
-          toggleModal={toggleModal}
-          toggleModalEsc={toggleModalEsc}
-        />
-      )}
+      {showModal && <Modal photo={bigPhoto} toggleModal={toggleModal} />}
     </div>
   );
 };
