@@ -17,23 +17,6 @@ export const App = () => {
   const [bigPhoto, setBigPhoto] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // const fetchPhoto = async ({ inputValue, page }) => {
-  //   try {
-  //     setLoader(true);
-
-  //     const data = await fetchImage({ inputValue, perPage, page });
-
-  //     setElement(prevState => {
-  //       return [...prevState, ...data.hits];
-  //     });
-  //     setTotalHits(data.totalHits);
-  //   } catch (error) {
-  //     console.error('Ошибка при загрузке данных:', error);
-  //   } finally {
-  //     setLoader(false);
-  //   }
-  // };
-
   useEffect(() => {
     if (!inputValue) {
       return;
